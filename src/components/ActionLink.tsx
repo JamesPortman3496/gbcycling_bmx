@@ -36,7 +36,7 @@ export function ActionLink({
   return (
     <Link
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "inline-flex items-center justify-center gap-1.5 rounded-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         sizeClasses[size],
         variantClasses[variant],
         className,

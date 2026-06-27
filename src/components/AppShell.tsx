@@ -52,7 +52,7 @@ export function AppShell({ children }: AppShellProps) {
       <header className="sticky top-0 z-40 border-b border-bc-mid-grey bg-bc-white">
         <div className="mx-auto flex h-12 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link
-            className="flex min-w-0 items-center gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
+            className="flex min-w-0 items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
             href="/competitions"
           >
             <Image
@@ -72,7 +72,7 @@ export function AppShell({ children }: AppShellProps) {
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
             aria-label="Open navigation menu"
-            className="inline-flex size-8 items-center justify-center rounded border border-bc-mid-grey bg-bc-white text-bc-navy transition-colors hover:bg-bc-light-grey focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2 md:hidden"
+            className="inline-flex size-8 items-center justify-center rounded-sm border border-bc-mid-grey bg-bc-white text-bc-navy transition-colors hover:bg-bc-light-grey focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2 md:hidden"
             onClick={() => setIsMenuOpen(true)}
             type="button"
           >
@@ -99,7 +99,7 @@ export function AppShell({ children }: AppShellProps) {
               </span>
               <button
                 aria-label="Close navigation menu"
-                className="inline-flex size-8 items-center justify-center rounded border border-bc-mid-grey bg-bc-white text-bc-navy transition-colors hover:bg-bc-light-grey focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
+                className="inline-flex size-8 items-center justify-center rounded-sm border border-bc-mid-grey bg-bc-white text-bc-navy transition-colors hover:bg-bc-light-grey focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
                 onClick={() => setIsMenuOpen(false)}
                 type="button"
               >
@@ -135,7 +135,7 @@ function NavLink({
   return (
     <Link
       className={cn(
-        "inline-flex h-9 items-center rounded px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2",
+        "inline-flex h-9 items-center rounded-sm px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2",
         isMobile && "w-full",
         isActive
           ? "bg-bc-navy text-bc-white"

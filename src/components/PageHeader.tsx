@@ -29,7 +29,7 @@ export function PageHeader({
       <div className="md:hidden">
         {backHref ? (
           <Link
-            className="inline-flex items-center gap-1 rounded text-sm font-medium text-bc-navy transition-colors hover:text-bc-royal-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1 rounded-sm text-sm font-medium text-bc-navy transition-colors hover:text-bc-royal-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
             href={backHref}
           >
             <ArrowLeft aria-hidden="true" size={16} strokeWidth={2.25} />
@@ -60,7 +60,7 @@ export function PageHeader({
                 ) : null}
                 {item.href && !isLast ? (
                   <Link
-                    className="rounded transition-colors hover:text-bc-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
+                    className="rounded-sm transition-colors hover:text-bc-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
                     href={item.href}
                   >
                     {item.label}

@@ -1,5 +1,9 @@
 import { ActionLink, Button, RouteScaffold } from "@/src/components";
-import { getPreviewAthlete, getPreviewCompetition, previewTricks } from "@/src/data/previewData";
+import { getPreviewAthlete, getPreviewCompetition } from "@/src/data/previewData";
+import {
+  getPrimaryPlannedRunForAthlete,
+  getRunsForCompetitionAthlete,
+} from "@/src/data/seedData";
 
 type NewRunPageProps = {
   params: Promise<{ athleteId: string; competitionId: string }>;
@@ -9,6 +13,9 @@ export default async function NewRunPage({ params }: NewRunPageProps) {
   const { athleteId, competitionId } = await params;
   const athlete = getPreviewAthlete(athleteId);
   const competition = getPreviewCompetition(competitionId);
+  const runs = getRunsForCompetitionAthlete(competitionId, athleteId);
+  const plannedRun = getPrimaryPlannedRunForAthlete(athleteId);
+  const captureRunId = runs[0]?.id ?? "run-1";
 
   return (
     <RouteScaffold
@@ -16,7 +23,7 @@ export default async function NewRunPage({ params }: NewRunPageProps) {
         <div className="flex gap-2">
           <Button variant="secondary">Save run setup</Button>
           <ActionLink
-            href={`/competitions/${competitionId}/athletes/${athleteId}/runs/run-1/capture`}
+            href={`/competitions/${competitionId}/athletes/${athleteId}/runs/${captureRunId}/capture`}
           >
             Start capture
           </ActionLink>
@@ -48,7 +55,7 @@ export default async function NewRunPage({ params }: NewRunPageProps) {
         },
         {
           title: "Planned trick preview",
-          rows: previewTricks.slice(0, 5).map((trick, index) => ({
+          rows: (plannedRun?.tricks ?? []).slice(0, 5).map((trick, index) => ({
             label: `Trick ${index + 1}`,
             value: trick.name,
           })),

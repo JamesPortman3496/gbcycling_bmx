@@ -1,8 +1,7 @@
 import { ActionLink, Card, PageHeader, StatCard } from "@/src/components";
 import {
+  getPreviewAthleteAnalysis,
   getPreviewAthlete,
-  previewFailReasons,
-  previewTricks,
 } from "@/src/data/previewData";
 
 type AthletePageProps = {
@@ -12,6 +11,7 @@ type AthletePageProps = {
 export default async function AthletePage({ params }: AthletePageProps) {
   const { athleteId } = await params;
   const athlete = getPreviewAthlete(athleteId);
+  const analysis = getPreviewAthleteAnalysis(athleteId);
 
   return (
     <div className="space-y-4">
@@ -53,10 +53,10 @@ export default async function AthletePage({ params }: AthletePageProps) {
         <Card>
           <h2 className="text-sm font-semibold text-bc-navy">Trick readiness</h2>
           <dl className="mt-3 space-y-2 text-sm">
-            {previewTricks.slice(0, 4).map((trick) => (
-              <div className="flex justify-between gap-3" key={trick.name}>
-                <dt className="text-bc-dark-grey">{trick.name}</dt>
-                <dd className="text-bc-navy">{trick.attemptCount} attempts</dd>
+            {(analysis?.trickReadiness.slice(0, 4) ?? []).map((trick) => (
+              <div className="flex justify-between gap-3" key={trick.trickName}>
+                <dt className="text-bc-dark-grey">{trick.trickName}</dt>
+                <dd className="text-bc-navy">{trick.attempts} attempts</dd>
               </div>
             ))}
           </dl>
@@ -65,7 +65,7 @@ export default async function AthletePage({ params }: AthletePageProps) {
         <Card>
           <h2 className="text-sm font-semibold text-bc-navy">Failure reasons</h2>
           <dl className="mt-3 space-y-2 text-sm">
-            {previewFailReasons.slice(0, 4).map((reason) => (
+            {(analysis?.failReasons.slice(0, 4) ?? []).map((reason) => (
               <div className="flex justify-between gap-3" key={reason.reason}>
                 <dt className="text-bc-dark-grey">{reason.reason}</dt>
                 <dd className="text-bc-navy">{reason.count}</dd>
