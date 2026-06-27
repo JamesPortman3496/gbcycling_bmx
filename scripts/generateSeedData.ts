@@ -74,6 +74,7 @@ type NormalizedRow = {
 
 type PlannedRunSeed = {
   athlete: string;
+  runNumber: number;
   runKey: string;
 };
 
@@ -195,6 +196,10 @@ function getRunKey(row: Pick<NormalizedRow, "competition" | "athlete" | "round" 
   return `${row.competition}::${row.athlete}::${row.round}::${row.run}`;
 }
 
+function getPlannedRunLookupKey(athleteId: string, runNumber: number): string {
+  return `${athleteId}::${runNumber}`;
+}
+
 function getRoundRank(round: string): number {
   return ROUND_RANKS[round] ?? Number.MAX_SAFE_INTEGER;
 }
@@ -265,41 +270,84 @@ function normalizeRow(row: RawCsvRow, rowNumber: number): NormalizedRow {
 
 function buildPlannedRuns(
   normalizedRows: NormalizedRow[],
-): Map<string, PlannedRun> {
-  const firstRunByAthlete = new Map<string, PlannedRunSeed>();
+): {
+  plannedRunsByAthleteId: Map<string, PlannedRun[]>;
+  plannedRunsByAthleteRunKey: Map<string, PlannedRun>;
+} {
+  const firstRunByAthleteRun = new Map<string, PlannedRunSeed>();
 
   for (const row of normalizedRows) {
-    if (!firstRunByAthlete.has(row.athlete)) {
-      firstRunByAthlete.set(row.athlete, {
+    const athleteRunKey = `${row.athlete}::${row.run}`;
+
+    if (!firstRunByAthleteRun.has(athleteRunKey)) {
+      firstRunByAthleteRun.set(athleteRunKey, {
         athlete: row.athlete,
+        runNumber: row.run,
         runKey: getRunKey(row),
       });
     }
   }
 
-  return new Map(
-    Array.from(firstRunByAthlete.values())
-      .sort((left, right) => left.athlete.localeCompare(right.athlete))
-      .map((seed) => {
-        const tricks: PlannedTrick[] = normalizedRows
-          .filter((row) => getRunKey(row) === seed.runKey)
-          .sort((left, right) => left.trickOrder - right.trickOrder)
-          .map((row) => ({
-            id: createId("planned-trick", seed.athlete, row.trickOrder),
-            name: row.plannedTrick ?? row.trickName,
-            order: row.trickOrder,
-          }));
+  const plannedRunsByAthleteId = new Map<string, PlannedRun[]>();
+  const plannedRunsByAthleteRunKey = new Map<string, PlannedRun>();
 
-        return [
-          createId("athlete", seed.athlete),
-          {
-            id: createId("planned-run", seed.athlete, "default"),
-            name: "Default imported planned run",
-            tricks,
-          },
-        ] as const;
-      }),
-  );
+  for (const seed of Array.from(firstRunByAthleteRun.values()).sort(
+    (left, right) =>
+      left.athlete.localeCompare(right.athlete) || left.runNumber - right.runNumber,
+  )) {
+    const athleteId = createId("athlete", seed.athlete);
+    const matchingRows = normalizedRows.filter(
+      (row) => row.athlete === seed.athlete && row.run === seed.runNumber,
+    );
+    const plannedRows = normalizedRows
+      .filter((row) => getRunKey(row) === seed.runKey)
+      .sort((left, right) => left.trickOrder - right.trickOrder);
+    const expectedSequence = plannedRows
+      .map((row) => `${row.trickOrder}:${row.plannedTrick ?? row.trickName}`)
+      .join("|");
+
+    for (const occurrenceRunKey of new Set(matchingRows.map(getRunKey))) {
+      const occurrenceSequence = normalizedRows
+        .filter((row) => getRunKey(row) === occurrenceRunKey)
+        .sort((left, right) => left.trickOrder - right.trickOrder)
+        .map((row) => `${row.trickOrder}:${row.plannedTrick ?? row.trickName}`)
+        .join("|");
+
+      if (occurrenceSequence !== expectedSequence) {
+        throw new Error(
+          `Inconsistent planned run detected for athlete "${seed.athlete}" run ${seed.runNumber}.`,
+        );
+      }
+    }
+
+    const plannedRun: PlannedRun = {
+      id: createId("planned-run", seed.athlete, seed.runNumber),
+      name: `Run ${seed.runNumber}`,
+      tricks: plannedRows.map((row) => ({
+        id: createId(
+          "planned-trick",
+          seed.athlete,
+          seed.runNumber,
+          row.trickOrder,
+        ),
+        name: row.plannedTrick ?? row.trickName,
+        order: row.trickOrder,
+      })),
+    };
+
+    const athletePlannedRuns = plannedRunsByAthleteId.get(athleteId) ?? [];
+    athletePlannedRuns.push(plannedRun);
+    plannedRunsByAthleteId.set(athleteId, athletePlannedRuns);
+    plannedRunsByAthleteRunKey.set(
+      getPlannedRunLookupKey(athleteId, seed.runNumber),
+      plannedRun,
+    );
+  }
+
+  return {
+    plannedRunsByAthleteId,
+    plannedRunsByAthleteRunKey,
+  };
 }
 
 async function generateSeedData() {
@@ -319,7 +367,8 @@ async function generateSeedData() {
 
   const normalizedRows = parsedRows.map((row, index) => normalizeRow(row, index + 2));
 
-  const plannedRunsByAthleteId = buildPlannedRuns(normalizedRows);
+  const { plannedRunsByAthleteId, plannedRunsByAthleteRunKey } =
+    buildPlannedRuns(normalizedRows);
   const athleteNameById = new Map<string, string>();
   const competitionDateById = new Map<string, string>();
   const athletes = new Map<string, Athlete>();
@@ -328,12 +377,10 @@ async function generateSeedData() {
   for (const row of normalizedRows) {
     const athleteId = createId("athlete", row.athlete);
     const competitionId = createId("competition", row.competition);
-    const plannedRun = plannedRunsByAthleteId.get(athleteId);
-
     athletes.set(athleteId, {
       id: athleteId,
       name: row.athlete,
-      plannedRuns: plannedRun ? [plannedRun] : [],
+      plannedRuns: plannedRunsByAthleteId.get(athleteId) ?? [],
       runIds: [],
     });
     athleteNameById.set(athleteId, row.athlete);
@@ -375,7 +422,9 @@ async function generateSeedData() {
       row.trickOrder,
     );
 
-    const plannedRun = plannedRunsByAthleteId.get(athleteId);
+    const plannedRun = plannedRunsByAthleteRunKey.get(
+      getPlannedRunLookupKey(athleteId, row.run),
+    );
     const plannedTrick = plannedRun?.tricks.find(
       (candidate) => candidate.order === row.trickOrder,
     );

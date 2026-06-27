@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { AppShell } from "@/src/components";
+import { AppShell, AthleteDraftProvider } from "@/src/components";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppShell>{children}</AppShell>
+        <AthleteDraftProvider>
+          <AppShell>{children}</AppShell>
+        </AthleteDraftProvider>
       </body>
     </html>
   );
