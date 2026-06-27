@@ -1,12 +1,15 @@
+NODE_RUNNER := bash scripts/run-with-node.sh
+
+.PHONY: install dev prepare-data check
+
 install:
-	npm install
+	$(NODE_RUNNER) npm install
 
 dev:
-	npm run dev
+	$(NODE_RUNNER) npm run dev
 
 prepare-data:
-	npm run prepare:data
+	$(NODE_RUNNER) npm run prepare:data
 
 check:
-	npm run lint && npm run typecheck
-
+	$(NODE_RUNNER) npm run lint && $(NODE_RUNNER) npm run typecheck
