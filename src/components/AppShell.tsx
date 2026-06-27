@@ -53,7 +53,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="mx-auto flex h-12 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link
             className="flex min-w-0 items-center gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
-            href="/"
+            href="/competitions"
           >
             <Image
               alt="British Cycling"

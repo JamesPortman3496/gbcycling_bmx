@@ -207,3 +207,19 @@ export const previewTotals = {
   runs: 90,
   trickAttempts: 2250,
 };
+
+export function getPreviewCompetition(competitionId: string) {
+  return previewCompetitions.find((competition) => competition.id === competitionId);
+}
+
+export function getPreviewAthlete(athleteId: string) {
+  return previewAthletes.find((athlete) => athlete.id === athleteId);
+}
+
+export function getPreviewCompetitionAthletes(competitionId: string) {
+  const athleteIds = previewAppData.competitionAthletes
+    .filter((entry) => entry.competitionId === competitionId)
+    .map((entry) => entry.athleteId);
+
+  return previewAthletes.filter((athlete) => athleteIds.includes(athlete.id));
+}

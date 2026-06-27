@@ -1,5 +1,5 @@
 import {
-  Button,
+  ActionLink,
   Card,
   PageHeader,
 } from "@/src/components";
@@ -9,7 +9,13 @@ export default function AthletesPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        actions={<Button>Add athlete</Button>}
+        actions={<ActionLink href="/athletes/new">Add athlete</ActionLink>}
+        backHref="/competitions"
+        backLabel="Back to competitions"
+        breadcrumbs={[
+          { href: "/competitions", label: "Competitions" },
+          { label: "Athletes" },
+        ]}
         description="Athlete records used for planned runs, run capture and analysis."
         title="Athletes"
       />
@@ -50,12 +56,20 @@ function AthleteList({ athletes }: AthleteListProps) {
             </span>
           </div>
           <div className="flex gap-2 md:justify-end">
-            <Button size="sm" variant="secondary">
+            <ActionLink
+              href={`/athletes/${athlete.id}`}
+              size="sm"
+              variant="secondary"
+            >
               Enter
-            </Button>
-            <Button size="sm" variant="ghost">
+            </ActionLink>
+            <ActionLink
+              href={`/athletes/${athlete.id}/edit`}
+              size="sm"
+              variant="ghost"
+            >
               Edit
-            </Button>
+            </ActionLink>
           </div>
         </Card>
       ))}

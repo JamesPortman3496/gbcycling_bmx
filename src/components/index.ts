@@ -1,3 +1,5 @@
+export { ActionLink } from "./ActionLink";
+export type { ActionLinkProps } from "./ActionLink";
 export { AppShell } from "./AppShell";
 export type { AppShellProps } from "./AppShell";
 export { Badge } from "./Badge";
@@ -8,5 +10,7 @@ export { Card } from "./Card";
 export type { CardProps } from "./Card";
 export { PageHeader } from "./PageHeader";
 export type { PageHeaderProps } from "./PageHeader";
+export { RouteScaffold } from "./RouteScaffold";
+export type { RouteScaffoldProps } from "./RouteScaffold";
 export { StatCard } from "./StatCard";
 export type { StatCardProps } from "./StatCard";
