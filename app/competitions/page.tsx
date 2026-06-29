@@ -1,16 +1,15 @@
-import {
-  ActionLink,
-  Card,
-  PageHeader,
-} from "@/src/components";
+import { ActionLink } from "@/src/components/ActionLink";
+import { Button } from "@/src/components/Button";
+import { Card } from "@/src/components/Card";
+import { PageHeader } from "@/src/components/PageHeader";
 import { previewCompetitions } from "@/src/data/previewData";
 
 export default function CompetitionsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        actions={<ActionLink href="/competitions/new">Add competition</ActionLink>}
-        description="Competition records used for athlete allocation and run capture."
+        actions={<Button disabled>Add competition</Button>}
+        description="Competition list for athlete allocation and run capture."
         title="Competitions"
       />
 
@@ -50,13 +49,9 @@ function CompetitionList({ competitions }: CompetitionListProps) {
             >
               Enter
             </ActionLink>
-            <ActionLink
-              href={`/competitions/${competition.id}/edit`}
-              size="sm"
-              variant="ghost"
-            >
+            <Button disabled size="sm" variant="ghost">
               Edit
-            </ActionLink>
+            </Button>
           </div>
         </Card>
       ))}

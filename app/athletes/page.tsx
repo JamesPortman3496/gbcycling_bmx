@@ -1,22 +1,15 @@
-import {
-  ActionLink,
-  Card,
-  PageHeader,
-} from "@/src/components";
+import { ActionLink } from "@/src/components/ActionLink";
+import { Button } from "@/src/components/Button";
+import { Card } from "@/src/components/Card";
+import { PageHeader } from "@/src/components/PageHeader";
 import { previewAthletes } from "@/src/data/previewData";
 
 export default function AthletesPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        actions={<ActionLink href="/athletes/new">Add athlete</ActionLink>}
-        backHref="/competitions"
-        backLabel="Back to competitions"
-        breadcrumbs={[
-          { href: "/competitions", label: "Competitions" },
-          { label: "Athletes" },
-        ]}
-        description="Athlete records used for planned runs, run capture and analysis."
+        actions={<Button disabled>Add athlete</Button>}
+        description="Athletes with planned runs, captured runs and analysis."
         title="Athletes"
       />
 
@@ -37,23 +30,10 @@ function AthleteList({ athletes }: AthleteListProps) {
           className="grid gap-3 text-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
           key={athlete.id}
         >
-          <div className="grid gap-2 md:grid-cols-[minmax(0,1.4fr)_90px_110px_90px] md:items-center md:gap-3">
+          <div>
             <div>
               <p className="font-medium text-bc-navy">{athlete.name}</p>
-              <p className="mt-0.5 text-xs text-bc-dark-grey md:hidden">
-                {athlete.runCount} runs - {athlete.attemptCount} attempts -{" "}
-                {athlete.landedRate}% landed
-              </p>
             </div>
-            <span className="hidden text-bc-dark-grey md:block">
-              {athlete.runCount} runs
-            </span>
-            <span className="hidden text-bc-dark-grey md:block">
-              {athlete.attemptCount} attempts
-            </span>
-            <span className="hidden text-bc-dark-grey md:block">
-              {athlete.landedRate}% landed
-            </span>
           </div>
           <div className="flex gap-2 md:justify-end">
             <ActionLink

@@ -85,6 +85,69 @@ export type TrickReadinessRow = {
   readiness: ReadinessStatus;
 };
 
+export type RagBreakdown = {
+  Amber: number;
+  Green: number;
+  Red: number;
+};
+
+export type TrickAddedValue = {
+  score: number;
+};
+
+export type TrickRecommendationLabel =
+  | "Reliable scorer"
+  | "Development priority"
+  | "High upside, high risk"
+  | "Low return"
+  | "Stable support";
+
+export type AthletePerformanceSnapshot = {
+  averageExecution: number;
+  attempts: number;
+  landedCount: number;
+  landedRate: number;
+  ragBreakdown: RagBreakdown;
+  runs: number;
+};
+
+export type TrickAnalysisRow = {
+  addedValue: number;
+  averageExecution: number;
+  averageOrder: number;
+  attempts: number;
+  landedCount: number;
+  landedRate: number;
+  mainFailReason: string | null;
+  ragBreakdown: RagBreakdown;
+  recommendationLabel: TrickRecommendationLabel;
+  trickName: string;
+};
+
+export type TrickAttemptDetail = {
+  coachNotes?: string;
+  competitionDate: string;
+  competitionName: string;
+  executionRating: number;
+  failReason?: string;
+  id: string;
+  landed: boolean;
+  previousTrickName: string | null;
+  previousTrickQuality: string | null;
+  ragRating: RagRating;
+  round: string;
+  runId: string;
+  runNumber: number;
+  trickOrder: number;
+};
+
+export type AthleteAnalysis = {
+  snapshot: AthletePerformanceSnapshot;
+  trickAttemptDetailsByName: Record<string, TrickAttemptDetail[]>;
+  trickAnalysisRows: TrickAnalysisRow[];
+  trickReadiness: TrickReadinessRow[];
+};
+
 export type AppData = {
   athletes: Athlete[];
   competitions: Competition[];

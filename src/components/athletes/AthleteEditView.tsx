@@ -48,7 +48,7 @@ export function AthleteEditView({
           { href: `/athletes/${athleteId}`, label: athlete.name },
           { label: "Edit athlete" },
         ]}
-        description="Update the athlete name and maintain planned run drafts."
+        description="Update the athlete name and planned runs for this session."
         title="Edit athlete"
       />
 
@@ -68,7 +68,7 @@ export function AthleteEditView({
                   Planned runs
                 </h2>
                 <p className="mt-1 text-sm text-bc-dark-grey">
-                  Open a run to rename it and manage its trick order.
+                  Open a run to rename it and adjust trick order.
                 </p>
               </div>
               <ActionLink href={`/athletes/${athleteId}/planned-runs/new`} variant="secondary">

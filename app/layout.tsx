@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { AppShell, AthleteDraftProvider } from "@/src/components";
+import { AthleteDraftProvider } from "@/src/components/AthleteDraftProvider";
+import { AppShell } from "@/src/components/AppShell";
 import "./globals.css";
 
 export const metadata: Metadata = {

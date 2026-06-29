@@ -76,6 +76,7 @@ export function RunCaptureView({
 
   const currentTrick = runDraft.tricks[currentIndex];
   const isLastTrick = currentIndex === runDraft.tricks.length - 1;
+  const canEndRunEarly = currentTrick.landed === false && !isLastTrick;
   const availableFailReasons = [
     ...previewFailReasons.slice(0, FAIL_REASON_LIMIT).map((item) => item.reason),
     OTHER_FAIL_REASON,
@@ -116,10 +117,13 @@ export function RunCaptureView({
             href: `/competitions/${competitionId}/athletes/${athleteId}`,
             label: athleteName,
           },
-          { href: `/competitions/${competitionId}/athletes/${athleteId}/runs/new`, label: "Add run" },
+          {
+            href: `/competitions/${competitionId}/athletes/${athleteId}/runs/new`,
+            label: "Run setup",
+          },
           { label: "Capture" },
         ]}
-        description="Record each trick with one-handed mobile controls."
+        description="Record the run trick by trick."
         title="Run capture"
       />
 
@@ -275,9 +279,9 @@ export function RunCaptureView({
       </Card>
 
       <div className="sticky bottom-4 z-30 rounded-lg border border-bc-mid-grey bg-bc-white p-3 shadow-sm">
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="grid grid-cols-2 gap-2">
           <Button
-            className="h-11 flex-1"
+            className="h-11 w-full"
             onClick={() =>
               currentIndex === 0
                 ? handleExitFlow()
@@ -288,18 +292,8 @@ export function RunCaptureView({
             {currentIndex === 0 ? "Exit run flow" : "Previous trick"}
           </Button>
 
-          {currentTrick.landed === false ? (
-            <Button
-              className="h-11 flex-1"
-              disabled={!isCurrentTrickComplete}
-              onClick={handleMoveToSummary}
-            >
-              End run
-            </Button>
-          ) : null}
-
           <Button
-            className="h-11 flex-1"
+            className="h-11 w-full"
             disabled={!isCurrentTrickComplete}
             onClick={() =>
               isLastTrick ? handleMoveToSummary() : setCurrentIndex((index) => index + 1)
@@ -307,6 +301,16 @@ export function RunCaptureView({
           >
             {isLastTrick ? "End run" : "Next trick"}
           </Button>
+
+          {canEndRunEarly ? (
+            <Button
+              className="col-span-2 h-11 w-full"
+              disabled={!isCurrentTrickComplete}
+              onClick={handleMoveToSummary}
+            >
+              End run early
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>

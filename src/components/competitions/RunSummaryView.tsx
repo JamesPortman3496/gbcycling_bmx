@@ -95,7 +95,7 @@ export function RunSummaryView({
           },
           { label: "Run summary" },
         ]}
-        description="Add the post-run summary before returning to the athlete workspace."
+        description="Add score, position and coach notes before returning."
         title="Run summary"
       />
 

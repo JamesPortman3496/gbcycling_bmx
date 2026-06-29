@@ -4,12 +4,11 @@ import {
   getPreviewAthleteRecord,
   getPreviewCompetitionRecord,
 } from "@/src/data/previewData";
+import type { AsyncPageProps } from "@/src/types/next-page";
 
-type CapturePageProps = {
-  params: Promise<{ athleteId: string; competitionId: string; runId: string }>;
-};
-
-export default async function RunCapturePage({ params }: CapturePageProps) {
+export default async function RunCapturePage({
+  params,
+}: AsyncPageProps<{ athleteId: string; competitionId: string; runId: string }>) {
   const { athleteId, competitionId, runId } = await params;
   const athlete = getPreviewAthleteRecord(athleteId);
   const competition = getPreviewCompetitionRecord(competitionId);

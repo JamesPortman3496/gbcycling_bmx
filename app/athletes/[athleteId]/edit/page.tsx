@@ -1,14 +1,11 @@
 import { notFound } from "next/navigation";
 import { AthleteEditView } from "@/src/components/athletes/AthleteEditView";
 import { getAthleteById } from "@/src/data/seedData";
-
-type EditAthletePageProps = {
-  params: Promise<{ athleteId: string }>;
-};
+import type { AsyncPageProps } from "@/src/types/next-page";
 
 export default async function EditAthletePage({
   params,
-}: EditAthletePageProps) {
+}: AsyncPageProps<{ athleteId: string }>) {
   const { athleteId } = await params;
   const athlete = getAthleteById(athleteId);
 

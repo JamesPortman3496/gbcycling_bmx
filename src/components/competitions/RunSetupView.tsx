@@ -4,10 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionLink, Button, Card, PageHeader, SelectInput } from "@/src/components";
 import { useAthleteDrafts } from "@/src/components/AthleteDraftProvider";
-import {
-  formatCompetitionStage,
-  getNextCompetitionStage,
-} from "@/src/data/competitionFlow";
+import { getNextCompetitionStage } from "@/src/data/competitionFlow";
 
 export type RunSetupViewProps = {
   athleteId: string;
@@ -78,13 +75,13 @@ export function RunSetupView({
             href: `/competitions/${competitionId}/athletes/${athleteId}`,
             label: athleteName,
           },
-          { label: "Add run" },
+          { label: "Run setup" },
         ]}
-        description="Confirm the inferred round and run, then load the mobile capture screen."
-        title="Pre-run confirmation"
+        description="Confirm the next round and planned run before capture."
+        title="Run setup"
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <div>
         <Card className="rounded-lg p-4 sm:p-5">
           {nextStage ? (
             <div className="space-y-5">
@@ -99,7 +96,7 @@ export function RunSetupView({
               </dl>
 
               <SelectInput
-                label="Preloaded run"
+                label="Planned run"
                 onChange={(event) => setSelectedPlannedRunId(event.target.value)}
                 value={selectedPlannedRunId}
               >
@@ -109,15 +106,6 @@ export function RunSetupView({
                   </option>
                 ))}
               </SelectInput>
-
-              <div className="rounded-sm bg-bc-light-grey p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-bc-dark-grey">
-                  Ready to record
-                </p>
-                <p className="mt-1 text-sm text-bc-navy">
-                  {formatCompetitionStage(nextStage.round, nextStage.runNumber)}
-                </p>
-              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -132,29 +120,6 @@ export function RunSetupView({
                 Back to athlete
               </ActionLink>
             </div>
-          )}
-        </Card>
-
-        <Card className="rounded-lg p-4 sm:p-5">
-          <h2 className="text-sm font-semibold text-bc-navy">Planned trick preview</h2>
-          {selectedPlannedRun ? (
-            <ol className="mt-3 grid gap-2 text-sm text-bc-dark-grey">
-              {selectedPlannedRun.tricks.slice(0, 6).map((trick) => (
-                <li
-                  className="flex items-center justify-between gap-3 rounded-sm bg-bc-light-grey px-3 py-2"
-                  key={trick.id}
-                >
-                  <span>Trick {trick.order}</span>
-                  <span className="text-right font-medium text-bc-navy">
-                    {trick.name}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="mt-3 text-sm text-bc-dark-grey">
-              No planned runs are available for this athlete yet.
-            </p>
           )}
         </Card>
       </div>

@@ -1,14 +1,11 @@
 import { notFound } from "next/navigation";
 import { PlannedRunEditorView } from "@/src/components/athletes/PlannedRunEditorView";
 import { getAthleteById } from "@/src/data/seedData";
-
-type NewPlannedRunPageProps = {
-  params: Promise<{ athleteId: string }>;
-};
+import type { AsyncPageProps } from "@/src/types/next-page";
 
 export default async function NewPlannedRunPage({
   params,
-}: NewPlannedRunPageProps) {
+}: AsyncPageProps<{ athleteId: string }>) {
   const { athleteId } = await params;
   const athlete = getAthleteById(athleteId);
 

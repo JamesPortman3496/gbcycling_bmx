@@ -4,16 +4,17 @@ import {
   getPreviewAthleteRecord,
   getPreviewCompetitionRecord,
 } from "@/src/data/previewData";
+import type { AsyncPagePropsWithSearch } from "@/src/types/next-page";
 
-type RunSummaryPageProps = {
-  params: Promise<{ athleteId: string; competitionId: string; runId: string }>;
-  searchParams: Promise<{ completed?: string }>;
-};
+const MAX_COMPLETED_TRICK_COUNT = 25;
 
 export default async function RunSummaryPage({
   params,
   searchParams,
-}: RunSummaryPageProps) {
+}: AsyncPagePropsWithSearch<
+  { athleteId: string; competitionId: string; runId: string },
+  { completed?: string }
+>) {
   const { athleteId, competitionId, runId } = await params;
   const { completed } = await searchParams;
   const athlete = getPreviewAthleteRecord(athleteId);
@@ -24,7 +25,8 @@ export default async function RunSummaryPage({
     !athlete ||
     !competition ||
     !Number.isFinite(completedTrickCount) ||
-    completedTrickCount < 1
+    completedTrickCount < 1 ||
+    completedTrickCount > MAX_COMPLETED_TRICK_COUNT
   ) {
     notFound();
   }

@@ -222,11 +222,11 @@ function PlannedRunEditorForm({
           { href: `/athletes/${athleteId}/edit`, label: "Edit athlete" },
           { label: mode === "new" ? "New planned run" : "Edit planned run" },
         ]}
-        description="Name the run, then order up to 25 planned tricks."
+        description="Name the run and order up to 25 tricks."
         title={mode === "new" ? "Add planned run" : "Edit planned run"}
       />
 
-      <Card className="rounded-[1.25rem] p-4 sm:p-5">
+      <Card className="p-4 sm:p-5">
         <form className="space-y-5" id="planned-run-form" onSubmit={handleSubmit}>
           <div className="max-w-md">
             <TextInput
@@ -313,11 +313,11 @@ function EditableTrickRowItem({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-[1.25rem] px-3 py-3 transition-shadow",
+        "flex items-center gap-3 rounded-sm px-3 py-3 transition-shadow",
         isEmpty
           ? "border border-dashed border-bc-mid-grey bg-bc-light-grey"
-          : "border border-bc-mid-grey bg-bc-white shadow-sm",
-        isDragging && "shadow-lg",
+          : "border border-bc-mid-grey bg-bc-white",
+        isDragging && "border-bc-royal-blue",
       )}
       ref={setNodeRef}
       style={{
@@ -332,7 +332,7 @@ function EditableTrickRowItem({
             : `Reorder trick ${index + 1}`
         }
         className={cn(
-          "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-bc-dark-grey transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2",
+          "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border text-bc-dark-grey transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2",
           isEmpty
             ? "cursor-default border-bc-mid-grey bg-bc-white"
             : "border-bc-mid-grey bg-bc-light-grey hover:border-bc-royal-blue hover:text-bc-navy",
@@ -358,7 +358,7 @@ function EditableTrickRowItem({
       {!isEmpty ? (
         <button
           aria-label={`Delete trick ${index + 1}`}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-bc-mid-grey bg-bc-white text-bc-dark-grey transition-colors hover:border-bc-red hover:text-bc-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-bc-mid-grey bg-bc-white text-bc-dark-grey transition-colors hover:border-bc-red hover:text-bc-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bc-royal-blue focus-visible:ring-offset-2"
           onClick={() => deleteTrick(row.id)}
           type="button"
         >

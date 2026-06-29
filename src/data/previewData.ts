@@ -9,14 +9,15 @@ import {
   getGlobalTrickSummaries,
   getSeedData,
 } from "./seedData";
+import type { AthleteSummary } from "./seedData";
 
 import type { CompetitionSeed, RunSeed, SeedData } from "@/src/types/seed-data";
 
-export const TEST_COMPETITION_ID = "competition-test-competition";
+export const PREVIEW_COMPETITION_ID = "competition-preview-practice";
 
-const TEST_COMPETITION_NAME = "Test Competition";
-const SOURCE_COMPETITION_ID = "competition-montpellier-world-cup";
-const CUTOFF_STAGE_INDEX = getCompetitionStageIndex("Semi-Final", 2);
+const PREVIEW_COMPETITION_NAME = "Practice Competition";
+const REFERENCE_COMPETITION_ID = "competition-montpellier-world-cup";
+const PREVIEW_STAGE_CUTOFF_INDEX = getCompetitionStageIndex("Semi-Final", 2);
 
 const baseAppData = getSeedData();
 
@@ -28,10 +29,34 @@ const previewAthleteById = new Map(
 const previewCompetitionById = new Map(
   previewAppData.competitions.map((competition) => [competition.id, competition]),
 );
+const previewRuns = Object.values(previewAppData.runsById).sort(sortRuns);
+const previewRunsByCompetitionId = new Map<string, RunSeed[]>();
+const previewRunsByCompetitionAthleteKey = new Map<string, RunSeed[]>();
 
-export const previewCompetitions = getPreviewCompetitionSummaries();
+for (const run of previewRuns) {
+  const competitionRuns = previewRunsByCompetitionId.get(run.competitionId) ?? [];
+  competitionRuns.push(run);
+  previewRunsByCompetitionId.set(run.competitionId, competitionRuns);
+
+  const competitionAthleteKey = getCompetitionAthleteKey(
+    run.competitionId,
+    run.athleteId,
+  );
+  const competitionAthleteRuns =
+    previewRunsByCompetitionAthleteKey.get(competitionAthleteKey) ?? [];
+  competitionAthleteRuns.push(run);
+  previewRunsByCompetitionAthleteKey.set(
+    competitionAthleteKey,
+    competitionAthleteRuns,
+  );
+}
 
 export const previewAthletes = getPreviewAthleteSummaries();
+const previewAthleteSummaryById = new Map(
+  previewAthletes.map((athlete) => [athlete.id, athlete]),
+);
+
+export const previewCompetitions = getPreviewCompetitionSummaries();
 
 export const previewTricks = getGlobalTrickSummaries();
 
@@ -40,11 +65,8 @@ export const previewFailReasons = getGlobalFailReasonSummaries();
 export const previewTotals = {
   athletes: previewAppData.athletes.length,
   competitions: previewAppData.competitions.length,
-  runs: Object.keys(previewAppData.runsById).length,
-  trickAttempts: Object.values(previewAppData.runsById).reduce(
-    (count, run) => count + run.tricks.length,
-    0,
-  ),
+  runs: previewRuns.length,
+  trickAttempts: previewRuns.reduce((count, run) => count + run.tricks.length, 0),
 };
 
 export function getPreviewCompetition(competitionId: string) {
@@ -106,7 +128,7 @@ export function getPreviewCompetitionRunSummaries() {
 }
 
 export function getPreviewAthlete(athleteId: string) {
-  const athlete = previewAthletes.find((item) => item.id === athleteId);
+  const athlete = previewAthleteSummaryById.get(athleteId);
 
   if (athlete) {
     return athlete;
@@ -140,17 +162,15 @@ export function getPreviewRunsForCompetitionAthlete(
   competitionId: string,
   athleteId: string,
 ) {
-  return Object.values(previewAppData.runsById)
-    .filter(
-      (run) => run.competitionId === competitionId && run.athleteId === athleteId,
-    )
-    .sort(sortRuns);
+  return (
+    previewRunsByCompetitionAthleteKey.get(
+      getCompetitionAthleteKey(competitionId, athleteId),
+    ) ?? []
+  );
 }
 
 export function getPreviewRunsForCompetition(competitionId: string) {
-  return Object.values(previewAppData.runsById)
-    .filter((run) => run.competitionId === competitionId)
-    .sort(sortRuns);
+  return previewRunsByCompetitionId.get(competitionId) ?? [];
 }
 
 export function getPreviewRunById(runId: string) {
@@ -159,37 +179,42 @@ export function getPreviewRunById(runId: string) {
 
 function createPreviewAppData(seedData: SeedData): SeedData {
   const sourceCompetition = seedData.competitions.find(
-    (competition) => competition.id === SOURCE_COMPETITION_ID,
+    (competition) => competition.id === REFERENCE_COMPETITION_ID,
   );
 
   if (!sourceCompetition) {
     return seedData;
   }
 
-  const testCompetition: CompetitionSeed = {
+  const previewCompetition: CompetitionSeed = {
     ...sourceCompetition,
-    id: TEST_COMPETITION_ID,
-    name: TEST_COMPETITION_NAME,
+    id: PREVIEW_COMPETITION_ID,
+    name: PREVIEW_COMPETITION_NAME,
   };
 
   const clonedRunIdsByAthleteId = new Map<string, string[]>();
   const clonedRuns = Object.values(seedData.runsById)
-    .filter((run) => run.competitionId === SOURCE_COMPETITION_ID)
+    .filter((run) => run.competitionId === REFERENCE_COMPETITION_ID)
     .filter(
-      (run) => getCompetitionStageIndex(run.round, run.runNumber) < CUTOFF_STAGE_INDEX,
+      (run) =>
+        getCompetitionStageIndex(run.round, run.runNumber) <
+        PREVIEW_STAGE_CUTOFF_INDEX,
     )
     .map((run) => {
       const clonedRunId = run.id.replace(
-        SOURCE_COMPETITION_ID,
-        TEST_COMPETITION_ID,
+        REFERENCE_COMPETITION_ID,
+        PREVIEW_COMPETITION_ID,
       );
       const clonedRun: RunSeed = {
         ...run,
-        competitionId: TEST_COMPETITION_ID,
+        competitionId: PREVIEW_COMPETITION_ID,
         id: clonedRunId,
         tricks: run.tricks.map((trick) => ({
           ...trick,
-          id: trick.id.replace(SOURCE_COMPETITION_ID, TEST_COMPETITION_ID),
+          id: trick.id.replace(
+            REFERENCE_COMPETITION_ID,
+            PREVIEW_COMPETITION_ID,
+          ),
         })),
       };
       const athleteRunIds = clonedRunIdsByAthleteId.get(clonedRun.athleteId) ?? [];
@@ -206,7 +231,7 @@ function createPreviewAppData(seedData: SeedData): SeedData {
 
   return {
     athletes,
-    competitions: [testCompetition, ...seedData.competitions],
+    competitions: [previewCompetition, ...seedData.competitions],
     runsById: {
       ...seedData.runsById,
       ...Object.fromEntries(clonedRuns.map((run) => [run.id, run])),
@@ -216,24 +241,7 @@ function createPreviewAppData(seedData: SeedData): SeedData {
 
 function getPreviewAthleteSummaries() {
   return previewAppData.athletes
-    .map((athlete) => {
-      const runs = Object.values(previewAppData.runsById).filter(
-        (run) => run.athleteId === athlete.id,
-      );
-      const tricks = runs.flatMap((run) => run.tricks);
-      const landedCount = tricks.filter((trick) => trick.landed).length;
-      const attemptCount = tricks.length;
-
-      return {
-        attemptCount,
-        id: athlete.id,
-        landedCount,
-        landedRate:
-          attemptCount === 0 ? 0 : Math.round((landedCount / attemptCount) * 100),
-        name: athlete.name,
-        runCount: runs.length,
-      };
-    })
+    .map((athlete) => buildPreviewAthleteSummary(athlete.id, athlete.name))
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
@@ -266,4 +274,28 @@ function getCompetitionDate(competitionId: string) {
 
 function getAthleteName(athleteId: string) {
   return previewAthleteById.get(athleteId)?.name ?? athleteId;
+}
+
+function buildPreviewAthleteSummary(
+  athleteId: string,
+  athleteName: string,
+): AthleteSummary {
+  const runs = previewRuns.filter((run) => run.athleteId === athleteId);
+  const tricks = runs.flatMap((run) => run.tricks);
+  const landedCount = tricks.filter((trick) => trick.landed).length;
+  const attemptCount = tricks.length;
+
+  return {
+    attemptCount,
+    id: athleteId,
+    landedCount,
+    landedRate:
+      attemptCount === 0 ? 0 : Math.round((landedCount / attemptCount) * 100),
+    name: athleteName,
+    runCount: runs.length,
+  };
+}
+
+function getCompetitionAthleteKey(competitionId: string, athleteId: string) {
+  return `${competitionId}:${athleteId}`;
 }

@@ -4,10 +4,9 @@ import path from "node:path";
 import { parse } from "csv-parse/sync";
 
 import type {
-  PlannedTrickSeed as PlannedTrick,
-  PlannedRunSeed as PlannedRun,
   AthleteSeed as Athlete,
   CompetitionSeed as Competition,
+  PlannedRunSeed as PlannedRun,
   RagRating,
   RunSeed as Run,
   SeedData,

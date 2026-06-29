@@ -1,6 +1,15 @@
 import fullDatasetAnalysis from "./generated/fullDatasetAnalysis.json";
+import { deriveRecommendationLabel } from "./analysisRules";
+import { getTrickAddedValue } from "./trickMetadata";
 
-import type { ReadinessStatus, TrickReadinessRow } from "@/src/types/domain";
+import type {
+  AthleteAnalysis,
+  RagBreakdown,
+  ReadinessStatus,
+  TrickAttemptDetail,
+  TrickAnalysisRow,
+  TrickReadinessRow,
+} from "@/src/types/domain";
 import type {
   AthleteSeed,
   CompetitionSeed,
@@ -40,11 +49,6 @@ export type FailReasonSummary = {
   reason: string;
 };
 
-export type AthleteAnalysis = {
-  failReasons: FailReasonSummary[];
-  trickReadiness: TrickReadinessRow[];
-};
-
 const seedData = fullDatasetAnalysis as unknown as SeedData;
 
 const athletes = [...seedData.athletes];
@@ -68,6 +72,14 @@ function getRoundRank(round: string): number {
 
 function roundToSingleDecimal(value: number): number {
   return Number(value.toFixed(1));
+}
+
+function createEmptyRagBreakdown(): RagBreakdown {
+  return {
+    Amber: 0,
+    Green: 0,
+    Red: 0,
+  };
 }
 
 function getCompetitionDate(competitionId: string): string {
@@ -102,6 +114,13 @@ for (const run of sortedRuns) {
 
 function flattenRunTricks(runs: RunSeed[]): RunTrickSeed[] {
   return runs.flatMap((run) => run.tricks);
+}
+
+function countRags(tricks: RunTrickSeed[]): RagBreakdown {
+  return tricks.reduce((counts, trick) => {
+    counts[trick.ragRating] += 1;
+    return counts;
+  }, createEmptyRagBreakdown());
 }
 
 function getMostCommonValue(counts: Map<string, number>): string | null {
@@ -281,34 +300,46 @@ export function getAthleteAnalysis(
   }
 
   const runs = getRunsForAthlete(athlete.id);
+  const tricks = flattenRunTricks(runs);
   const failReasonCounts = new Map<string, number>();
+  const trickAttemptDetailsByName = new Map<string, TrickAttemptDetail[]>();
   const trickStats = new Map<
     string,
     {
+      addedValue: number;
       attempts: number;
+      averageOrderTotal: number;
       failReasonCounts: Map<string, number>;
       landedCount: number;
       nextScoreCount: number;
       nextScoreTotal: number;
+      ragBreakdown: RagBreakdown;
       scoreTotal: number;
       trickName: string;
     }
   >();
 
   for (const run of runs) {
+    const competition = getCompetitionById(run.competitionId);
+
     run.tricks.forEach((trick, index) => {
       const stats = trickStats.get(trick.trickName) ?? {
+        addedValue: getTrickAddedValue(trick.trickName).score,
         attempts: 0,
+        averageOrderTotal: 0,
         failReasonCounts: new Map<string, number>(),
         landedCount: 0,
         nextScoreCount: 0,
         nextScoreTotal: 0,
+        ragBreakdown: createEmptyRagBreakdown(),
         scoreTotal: 0,
         trickName: trick.trickName,
       };
 
       stats.attempts += 1;
+      stats.averageOrderTotal += trick.order;
       stats.scoreTotal += trick.executionRating;
+      stats.ragBreakdown[trick.ragRating] += 1;
 
       if (trick.landed) {
         stats.landedCount += 1;
@@ -326,6 +357,29 @@ export function getAthleteAnalysis(
       }
 
       const nextTrick = run.tricks[index + 1];
+      const previousTrick = run.tricks[index - 1];
+
+      const attemptDetails = trickAttemptDetailsByName.get(trick.trickName) ?? [];
+      attemptDetails.push({
+        coachNotes: run.coachNotes,
+        competitionDate: competition?.date ?? "",
+        competitionName: competition?.name ?? run.competitionId,
+        executionRating: trick.executionRating,
+        failReason: trick.failReason,
+        id: trick.id,
+        landed: trick.landed,
+        previousTrickName: previousTrick?.trickName ?? null,
+        previousTrickQuality:
+          trick.previousTrickQuality && trick.previousTrickQuality !== "N/A"
+            ? trick.previousTrickQuality
+            : null,
+        ragRating: trick.ragRating,
+        round: run.round,
+        runId: run.id,
+        runNumber: run.runNumber,
+        trickOrder: trick.order,
+      });
+      trickAttemptDetailsByName.set(trick.trickName, attemptDetails);
 
       if (nextTrick) {
         stats.nextScoreTotal += nextTrick.executionRating;
@@ -370,16 +424,80 @@ export function getAthleteAnalysis(
         left.trickName.localeCompare(right.trickName),
     );
 
-  const failReasons = Array.from(failReasonCounts.entries())
-    .map(([reason, count]) => ({ count, reason }))
+  const trickAnalysisRows = Array.from(trickStats.values())
+    .map((stats): TrickAnalysisRow => {
+      const landedRate =
+        stats.attempts === 0 ? 0 : Math.round((stats.landedCount / stats.attempts) * 100);
+      const averageExecution =
+        stats.attempts === 0 ? 0 : roundToSingleDecimal(stats.scoreTotal / stats.attempts);
+
+      return {
+        addedValue: stats.addedValue,
+        averageExecution,
+        averageOrder:
+          stats.attempts === 0
+            ? 0
+            : roundToSingleDecimal(stats.averageOrderTotal / stats.attempts),
+        attempts: stats.attempts,
+        landedCount: stats.landedCount,
+        landedRate,
+        mainFailReason: getMostCommonValue(stats.failReasonCounts),
+        ragBreakdown: stats.ragBreakdown,
+        recommendationLabel: deriveRecommendationLabel({
+          addedValue: stats.addedValue,
+          averageExecution,
+          landedRate,
+          ragBreakdown: stats.ragBreakdown,
+        }),
+        trickName: stats.trickName,
+      };
+    })
     .sort(
       (left, right) =>
-        right.count - left.count || left.reason.localeCompare(right.reason),
+        right.addedValue - left.addedValue ||
+        right.landedRate - left.landedRate ||
+        right.averageExecution - left.averageExecution ||
+        left.trickName.localeCompare(right.trickName),
     );
 
+  const snapshot = createSnapshot(runs, tricks);
+
   return {
-    failReasons,
+    snapshot,
+    trickAttemptDetailsByName: Object.fromEntries(
+      Array.from(trickAttemptDetailsByName.entries()).map(([trickName, attempts]) => [
+        trickName,
+        attempts.sort(
+          (left, right) =>
+            left.competitionDate.localeCompare(right.competitionDate) ||
+            getRoundRank(left.round) - getRoundRank(right.round) ||
+            left.runNumber - right.runNumber ||
+            left.trickOrder - right.trickOrder ||
+            left.id.localeCompare(right.id),
+        ),
+      ]),
+    ),
+    trickAnalysisRows,
     trickReadiness,
+  };
+}
+
+function createSnapshot(runs: RunSeed[], tricks: RunTrickSeed[]) {
+  const landedCount = tricks.filter((trick) => trick.landed).length;
+  const attempts = tricks.length;
+
+  return {
+    averageExecution:
+      attempts === 0
+        ? 0
+        : roundToSingleDecimal(
+            tricks.reduce((total, trick) => total + trick.executionRating, 0) / attempts,
+          ),
+    attempts,
+    landedCount,
+    landedRate: attempts === 0 ? 0 : Math.round((landedCount / attempts) * 100),
+    ragBreakdown: countRags(tricks),
+    runs: runs.length,
   };
 }
 

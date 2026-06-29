@@ -1,38 +1,43 @@
-import { ActionLink, Button, Card, PageHeader } from "@/src/components";
+import { notFound } from "next/navigation";
+import { ActionLink } from "@/src/components/ActionLink";
+import { Button } from "@/src/components/Button";
+import { Card } from "@/src/components/Card";
+import { PageHeader } from "@/src/components/PageHeader";
 import {
   getPreviewCompetition,
   getPreviewCompetitionAthletes,
 } from "@/src/data/previewData";
-
-type CompetitionPageProps = {
-  params: Promise<{ competitionId: string }>;
-};
+import type { AsyncPageProps } from "@/src/types/next-page";
 
 export default async function CompetitionPage({
   params,
-}: CompetitionPageProps) {
+}: AsyncPageProps<{ competitionId: string }>) {
   const { competitionId } = await params;
   const competition = getPreviewCompetition(competitionId);
   const athletes = getPreviewCompetitionAthletes(competitionId);
+
+  if (!competition) {
+    notFound();
+  }
 
   return (
     <div className="space-y-4">
       <PageHeader
         actions={
           <div className="flex gap-2">
-            <ActionLink href={`/competitions/${competitionId}/edit`} variant="ghost">
+            <Button disabled variant="ghost">
               Edit competition
-            </ActionLink>
-            <Button>Add athlete</Button>
+            </Button>
+            <Button disabled>Add athlete</Button>
           </div>
         }
         backHref="/competitions"
         breadcrumbs={[
           { href: "/competitions", label: "Competitions" },
-          { label: competition?.name ?? competitionId },
+          { label: competition.name },
         ]}
-        description="Competition athlete list."
-        title={competition?.name ?? competitionId}
+        description="Assigned athletes for this competition."
+        title={competition.name}
       />
 
       <section className="grid gap-2">
@@ -52,8 +57,8 @@ export default async function CompetitionPage({
               >
                 Enter
               </ActionLink>
-              <Button size="sm" variant="ghost">
-                Remove
+              <Button disabled size="sm" variant="ghost">
+                Remove athlete
               </Button>
             </div>
           </Card>
