@@ -7,6 +7,7 @@ import type {
   RagBreakdown,
   ReadinessStatus,
   RunAnalysisSummary,
+  RunSplitSummary,
   TrickAttemptDetail,
   TrickAnalysisRow,
   TrickReadinessRow,
@@ -463,9 +464,22 @@ export function getAthleteAnalysis(
 
   const snapshot = createSnapshot(runs, tricks);
   const runSummaries = createRunAnalysisSummaries(runs);
+  const roundSummaries = createRunSplitSummaries(
+    runSummaries,
+    (run) => run.round,
+    (left, right) => getRoundRank(left.label) - getRoundRank(right.label),
+  );
+  const runNumberSummaries = createRunSplitSummaries(
+    runSummaries,
+    (run) => `Run ${run.runNumber}`,
+    (left, right) =>
+      Number(left.label.replace("Run ", "")) - Number(right.label.replace("Run ", "")),
+  );
 
   return {
+    runNumberSummaries,
     runSummaries,
+    roundSummaries,
     snapshot,
     trickAttemptDetailsByName: Object.fromEntries(
       Array.from(trickAttemptDetailsByName.entries()).map(([trickName, attempts]) => [
@@ -509,38 +523,10 @@ function createRunAnalysisSummaries(runs: RunSeed[]): RunAnalysisSummary[] {
     const competition = getCompetitionById(run.competitionId);
     const trickCount = run.tricks.length;
     const landedCount = run.tricks.filter((trick) => trick.landed).length;
-    const failReasonCounts = new Map<string, number>();
-    const missedTrickNames = new Set<string>();
-
-    for (const trick of run.tricks) {
-      if (trick.landed) {
-        continue;
-      }
-
-      missedTrickNames.add(trick.trickName);
-
-      if (trick.failReason) {
-        failReasonCounts.set(
-          trick.failReason,
-          (failReasonCounts.get(trick.failReason) ?? 0) + 1,
-        );
-      }
-    }
-
-    const ragBreakdown = countRags(run.tricks);
 
     return {
-      averageExecution:
-        trickCount === 0
-          ? 0
-          : roundToSingleDecimal(
-              run.tricks.reduce((total, trick) => total + trick.executionRating, 0) /
-                trickCount,
-            ),
-      coachNotes: run.coachNotes,
       competitionDate: competition?.date ?? "",
       competitionName: competition?.name ?? run.competitionId,
-      completionPercentage: run.completionPercentage ?? null,
       executionPoints: run.tricks
         .map((trick) => ({
           executionRating: trick.executionRating,
@@ -550,13 +536,8 @@ function createRunAnalysisSummaries(runs: RunSeed[]): RunAnalysisSummary[] {
           trickOrder: trick.order,
         }))
         .sort((left, right) => left.trickOrder - right.trickOrder),
-      failReasons: getCountSummaries(failReasonCounts).slice(0, 3),
       id: run.id,
       landedCount,
-      landedRate: getPercentage(landedCount, trickCount),
-      missedTrickNames: Array.from(missedTrickNames).sort().slice(0, 6),
-      ragBreakdown,
-      redRate: getPercentage(ragBreakdown.Red, trickCount),
       round: run.round,
       runNumber: run.runNumber,
       score: run.score ?? null,
@@ -565,13 +546,45 @@ function createRunAnalysisSummaries(runs: RunSeed[]): RunAnalysisSummary[] {
   });
 }
 
-function getCountSummaries(counts: Map<string, number>) {
-  return Array.from(counts.entries())
-    .map(([reason, count]) => ({ count, reason }))
-    .sort(
-      (left, right) =>
-        right.count - left.count || left.reason.localeCompare(right.reason),
-    );
+function createRunSplitSummaries(
+  runSummaries: RunAnalysisSummary[],
+  getLabel: (run: RunAnalysisSummary) => string,
+  sort: (left: RunSplitSummary, right: RunSplitSummary) => number,
+): RunSplitSummary[] {
+  const groups = new Map<string, RunAnalysisSummary[]>();
+
+  for (const run of runSummaries) {
+    const label = getLabel(run);
+    const groupedRuns = groups.get(label) ?? [];
+    groupedRuns.push(run);
+    groups.set(label, groupedRuns);
+  }
+
+  return Array.from(groups.entries())
+    .map(([label, runs]): RunSplitSummary => ({
+      averageScore: averageNullable(runs.map((run) => run.score)),
+      landedRate: getPercentage(
+        runs.reduce((total, run) => total + run.landedCount, 0),
+        runs.reduce((total, run) => total + run.trickCount, 0),
+      ),
+      label,
+      runCount: runs.length,
+    }))
+    .sort(sort);
+}
+
+function average(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  return roundToSingleDecimal(
+    values.reduce((total, value) => total + value, 0) / values.length,
+  );
+}
+
+function averageNullable(values: Array<number | null>): number {
+  return average(values.filter((value): value is number => value !== null));
 }
 
 function getPercentage(count: number, total: number): number {
