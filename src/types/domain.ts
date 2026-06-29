@@ -141,7 +141,34 @@ export type TrickAttemptDetail = {
   trickOrder: number;
 };
 
+export type RunAnalysisSummary = {
+  averageExecution: number;
+  coachNotes?: string;
+  competitionDate: string;
+  competitionName: string;
+  completionPercentage: number | null;
+  executionPoints: Array<{
+    executionRating: number;
+    landed: boolean;
+    ragRating: RagRating;
+    trickName: string;
+    trickOrder: number;
+  }>;
+  failReasons: Array<{ count: number; reason: string }>;
+  id: string;
+  landedCount: number;
+  landedRate: number;
+  missedTrickNames: string[];
+  ragBreakdown: RagBreakdown;
+  redRate: number;
+  round: string;
+  runNumber: number;
+  score: number | null;
+  trickCount: number;
+};
+
 export type AthleteAnalysis = {
+  runSummaries: RunAnalysisSummary[];
   snapshot: AthletePerformanceSnapshot;
   trickAttemptDetailsByName: Record<string, TrickAttemptDetail[]>;
   trickAnalysisRows: TrickAnalysisRow[];
