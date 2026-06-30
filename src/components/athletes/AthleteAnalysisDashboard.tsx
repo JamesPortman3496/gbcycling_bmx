@@ -7,7 +7,6 @@ import type {
   AthleteAnalysis,
   RagBreakdown,
   RunAnalysisSummary,
-  RunSplitSummary,
   TrickAttemptDetail,
   TrickAnalysisRow,
 } from "@/src/types/domain";
@@ -213,8 +212,6 @@ export function AthleteAnalysisView({
         />
         <RunExecutionLineChart runs={analysis.runSummaries} />
       </Card>
-
-      <RunAnalysisSection analysis={analysis} />
     </div>
   );
 }
@@ -222,22 +219,6 @@ export function AthleteAnalysisView({
 type TrickDetailPanelProps = {
   attemptDetails: TrickAttemptDetail[];
 };
-
-function RunAnalysisSection({ analysis }: { analysis: AthleteAnalysis }) {
-  return (
-    <section>
-      <Card className="space-y-4 p-4">
-        <SectionHeading
-          title="Performance changes by stage and run"
-        />
-        <div className="grid gap-5 lg:grid-cols-2">
-          <SplitBarGroup summaries={analysis.roundSummaries} title="By round" />
-          <SplitBarGroup summaries={analysis.runNumberSummaries} title="By run number" />
-        </div>
-      </Card>
-    </section>
-  );
-}
 
 function RunExecutionLineChart({ runs }: { runs: RunAnalysisSummary[] }) {
   const competitionGroups = groupRunsByCompetition(runs);
@@ -506,52 +487,6 @@ function RunExecutionCompetitionPanel({
   );
 }
 
-function SplitBarGroup({
-  summaries,
-  title,
-}: {
-  summaries: RunSplitSummary[];
-  title: string;
-}) {
-  return (
-    <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-bc-dark-grey">
-        {title}
-      </h3>
-      {summaries.length ? (
-        <div className="space-y-3">
-          {summaries.map((summary) => (
-            <div
-              className="grid gap-3 border-t border-bc-mid-grey pt-3 first:border-t-0 first:pt-0 sm:grid-cols-[8rem_minmax(0,1fr)]"
-              key={summary.label}
-            >
-              <div>
-                <p className="font-medium text-bc-navy">{summary.label}</p>
-                <p className="mt-0.5 text-xs text-bc-dark-grey">{summary.runCount} runs</p>
-              </div>
-              <div className="space-y-2">
-                <MetricBar
-                  label="Run score"
-                  value={summary.averageScore}
-                  variant="blue"
-                />
-                <MetricBar
-                  label="Landed rate"
-                  suffix="%"
-                  value={summary.landedRate}
-                  variant="green"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyAnalysisState label="No split data available." />
-      )}
-    </div>
-  );
-}
-
 function TrickDetailPanel({ attemptDetails }: TrickDetailPanelProps) {
   const [showFailuresOnly, setShowFailuresOnly] = useState(false);
   const failReasons = useMemo(() => {
@@ -684,40 +619,6 @@ function SectionHeading({ description, title }: SectionHeadingProps) {
       {description ? (
         <p className="mt-1 text-sm text-bc-dark-grey">{description}</p>
       ) : null}
-    </div>
-  );
-}
-
-function MetricBar({
-  label,
-  suffix = "",
-  value,
-  variant,
-}: {
-  label: string;
-  suffix?: string;
-  value: number;
-  variant: "blue" | "green" | "red";
-}) {
-  const barClassName = {
-    blue: "bg-bc-royal-blue",
-    green: "bg-emerald-500",
-    red: "bg-bc-red",
-  }[variant];
-
-  return (
-    <div className="grid w-full max-w-md grid-cols-[4.5rem_minmax(7rem,1fr)_3rem] items-center gap-2 text-xs text-bc-dark-grey">
-      <span>{label}</span>
-      <div className="h-2 overflow-hidden rounded-full bg-bc-light-grey">
-        <div
-          className={`h-full rounded-full ${barClassName}`}
-          style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
-        />
-      </div>
-      <span className="text-right font-medium text-bc-navy">
-        {value}
-        {suffix}
-      </span>
     </div>
   );
 }
