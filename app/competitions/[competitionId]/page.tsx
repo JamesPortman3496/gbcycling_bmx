@@ -6,7 +6,7 @@ import { PageHeader } from "@/src/components/PageHeader";
 import {
   getPreviewCompetition,
   getPreviewCompetitionAthletes,
-} from "@/src/data/previewData";
+} from "@/src/data/practiceCompetitionData";
 import type { AsyncPageProps } from "@/src/types/next-page";
 
 export default async function CompetitionPage({

@@ -3,7 +3,7 @@ import { RunSetupView } from "@/src/components/competitions/RunSetupView";
 import {
   getPreviewAthleteRecord,
   getPreviewCompetitionRecord,
-} from "@/src/data/previewData";
+} from "@/src/data/practiceCompetitionData";
 import type { AsyncPageProps } from "@/src/types/next-page";
 
 export default async function NewRunPage({

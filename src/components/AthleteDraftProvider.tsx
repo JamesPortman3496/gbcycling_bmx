@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { compareCompetitionStages } from "@/src/data/competitionFlow";
-import { getPreviewRunsForCompetitionAthlete } from "@/src/data/previewData";
+import { getPreviewRunsForCompetitionAthlete } from "@/src/data/practiceCompetitionData";
 import { getAthleteById } from "@/src/data/seedData";
 import type { AthleteDraft, PlannedRunDraft } from "@/src/types/athlete-drafts";
 import type {

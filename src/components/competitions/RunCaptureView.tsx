@@ -7,7 +7,7 @@ import { useAthleteDrafts } from "@/src/components/AthleteDraftProvider";
 import {
   formatCompetitionStage,
 } from "@/src/data/competitionFlow";
-import { previewFailReasons, previewTricks } from "@/src/data/previewData";
+import { previewFailReasons, previewTricks } from "@/src/data/practiceCompetitionData";
 
 const FAIL_REASON_LIMIT = 6;
 const OTHER_FAIL_REASON = "Other";

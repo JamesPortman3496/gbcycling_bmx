@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 import { ActionLink, Badge, Card, PageHeader, SelectInput, StatCard } from "@/src/components";
-import { deriveRecommendationLabel } from "@/src/data/analysisRules";
+import { deriveRecommendationLabel } from "@/src/data/trickRecommendationRules";
 import type {
   AthleteAnalysis,
   RagBreakdown,

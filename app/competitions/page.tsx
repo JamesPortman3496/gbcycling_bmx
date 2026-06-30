@@ -2,7 +2,7 @@ import { ActionLink } from "@/src/components/ActionLink";
 import { Button } from "@/src/components/Button";
 import { Card } from "@/src/components/Card";
 import { PageHeader } from "@/src/components/PageHeader";
-import { previewCompetitions } from "@/src/data/previewData";
+import { previewCompetitions } from "@/src/data/practiceCompetitionData";
 
 export default function CompetitionsPage() {
   return (

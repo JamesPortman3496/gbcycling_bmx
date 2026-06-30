@@ -3,7 +3,7 @@ import { RunSummaryView } from "@/src/components/competitions/RunSummaryView";
 import {
   getPreviewAthleteRecord,
   getPreviewCompetitionRecord,
-} from "@/src/data/previewData";
+} from "@/src/data/practiceCompetitionData";
 import type { AsyncPagePropsWithSearch } from "@/src/types/next-page";
 
 const MAX_COMPLETED_TRICK_COUNT = 25;

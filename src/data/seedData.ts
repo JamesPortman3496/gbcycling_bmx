@@ -1,6 +1,6 @@
 import fullDatasetAnalysis from "./generated/fullDatasetAnalysis.json";
-import { deriveRecommendationLabel } from "./analysisRules";
-import { getTrickAddedValue } from "./trickMetadata";
+import { deriveRecommendationLabel } from "./trickRecommendationRules";
+import { getTrickAddedValue } from "./trickValueMetadata";
 
 import type {
   AthleteAnalysis,
